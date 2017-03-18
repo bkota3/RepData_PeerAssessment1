@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Activity Monitoring Data</title>
+
+<script src="PA1_template_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="PA1_template_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="PA1_template_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="PA1_template_files/navigation-1.1/tabsets.js"></script>
+<link href="PA1_template_files/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="PA1_template_files/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Activity Monitoring Data</h1>
+<h4 class="date"><em>3/14/2017</em></h4>
+
+</div>
+
+
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
+<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+</div>
+<div id="including-plots" class="section level2">
+<h2>Including Plots</h2>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+<pre class="r"><code>##Loading and preprocessing the data
+
+activitydata &lt;- read.csv(&quot;~/Downloads/activity 2.csv&quot;,sep = &quot;,&quot;,header = TRUE)
+subactivity &lt;- subset(activitydata,!(is.na(activitydata$steps)))
+
+##calculate the total number of steps taken per day
+totalSteps &lt;- aggregate(steps ~ date, data = subactivity, sum)
+
+##histogram of total number of steps taken per day
+hist(totalSteps$steps,main = &quot;Histogram of total steps&quot;,xlab = &quot;Total Daily Steps&quot;,col = &quot;blue&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/Activity%20monitoring%20data-1.png" width="672" /></p>
+<pre class="r"><code>#Mean and Median of Total steps taken per day
+Msteps &lt;- mean(totalSteps$steps) 
+median(totalSteps$steps)</code></pre>
+<pre><code>## [1] 10765</code></pre>
+<pre class="r"><code>## calculate the mean of daily activity
+averageactivity &lt;- aggregate(steps~interval,data = subactivity,mean, na.rm = TRUE)
+
+## plot the average daily activity
+plot(steps~interval , data = averageactivity, type = &quot;l&quot;, main = &quot;Average Daily Activity Pattern&quot;,
+     xlab = &quot;5-min Interval&quot;, ylab = &quot;Average Daily Steps&quot;, col = &quot;Red&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/Activity%20monitoring%20data-2.png" width="672" /></p>
+<pre class="r"><code>## calculate the total number of missing values
+sum(is.na(activitydata$steps))</code></pre>
+<pre><code>## [1] 2304</code></pre>
+<pre class="r"><code>##create a newdata set merging the activity dataframe and average activity data
+newactivity &lt;- merge(activitydata, averageactivity, by = &#39;interval&#39;, all.y = F)
+
+##fill the NA values with averages rounding up for integers
+newactivity$steps.x[is.na(newactivity$steps.x)] &lt;- as.integer(
+  round(newactivity$steps.y[is.na(newactivity$steps.x)]))
+
+##calculate the total number of steps taken per day
+newtotalSteps &lt;- aggregate(steps.x~date, data = newactivity,sum)
+
+##Make a histogram of the total number of steps taken each day 
+hist(newtotalSteps$steps.x,main = &quot;Histogram of new total steps taken&quot;,
+     xlab = &quot;New Total Steps&quot;, col = &quot;purple&quot;)
+
+## calculate the mean and median of new total steps
+mean(newtotalSteps$steps.x)</code></pre>
+<pre><code>## [1] 10765.64</code></pre>
+<pre class="r"><code>median(newtotalSteps$steps.x)</code></pre>
+<pre><code>## [1] 10762</code></pre>
+<pre class="r"><code>##Create a new factor variable in the dataset with two levels – 
+##“weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+weekend &lt;- weekdays(as.Date(newactivity$date)) %in% c(&quot;Saturday&quot;, &quot;Sunday&quot;)
+newactivity$daytype &lt;- &quot;weekday&quot;
+newactivity$daytype[weekend == TRUE] &lt;- &quot;weekend&quot;
+newactivity$daytype &lt;- as.factor(newactivity$daytype)
+
+##calculate average number of steps taken, averaged across all weekday days or weekend days
+newinterval &lt;- aggregate(steps.x ~ interval + daytype, newactivity, mean)
+
+
+## plot differences in activity patterns between weekdays and weekends
+
+
+library(lattice)</code></pre>
+<p><img src="PA1_template_files/figure-html/Activity%20monitoring%20data-3.png" width="672" /></p>
+<pre class="r"><code>xyplot(
+  steps.x ~ interval | daytype,
+  newinterval,
+  type = &quot;l&quot;,
+  layout = c(1,2),
+  main = &quot;Weekend and Weekday Activity Pattern&quot;,
+  xlab = &quot;Interval&quot;,
+  ylab = &quot;Average Number of Steps Taken&quot;
+)</code></pre>
+<p><img src="PA1_template_files/figure-html/Activity%20monitoring%20data-4.png" width="672" /></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
